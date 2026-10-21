@@ -68,3 +68,94 @@ Actúa como intermediario entre el Modelo y la Vista.
 
 ---
 
+## 🚀 Instrucciones de Uso
+
+> 📘 Estas instrucciones, junto con una guía para **desarrollar** sin generar un JAR (recarga de vistas, depuración, pruebas y cómo agregar funcionalidades), también están en [INSTRUCCIONES.md](INSTRUCCIONES.md).
+
+### 1. Requisitos previos
+*   **JDK 21 o superior** instalado. Verificar con `java -version`.
+*   La variable de entorno `JAVA_HOME` debe apuntar a la carpeta del JDK (o `java` debe estar en el `PATH`).
+*   **No es necesario instalar Maven**: el proyecto incluye el *Maven Wrapper* (`mvnw` / `mvnw.cmd`), que descarga Maven automáticamente la primera vez que se ejecuta (requiere conexión a Internet).
+*   Un navegador web. Bootstrap se carga desde un CDN, por lo que sin Internet la página funciona pero se ve sin estilos.
+
+### 2. Obtener el código
+```bash
+git clone <URL-del-repositorio>
+cd ecommerce-mvc-java
+```
+
+### 3. Ejecutar la aplicación
+Desde la carpeta raíz del proyecto (donde está `pom.xml`):
+
+**Windows (PowerShell o CMD):**
+```bash
+.\mvnw.cmd spring-boot:run
+```
+
+**Linux / macOS / Git Bash:**
+```bash
+./mvnw spring-boot:run
+```
+
+Cuando en la consola aparezca `Started EcommerceMvcApplication` y el mensaje `Base de datos inicializada con productos de prueba`, la aplicación está lista. Para detenerla, presionar `Ctrl + C`.
+
+> Si el puerto 8080 ya está ocupado, se puede usar otro (las comillas son necesarias en PowerShell): `./mvnw spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"`
+
+**Desde Visual Studio Code:** con el *Extension Pack for Java* y *Spring Boot Extension Pack* instalados, abrir `EcommerceMvcApplication.java` y hacer clic en **Run** sobre el método `main`.
+
+### 4. Generar un JAR ejecutable (opcional)
+```bash
+./mvnw clean package -DskipTests
+java -jar target/ecommerce-mvc-0.0.1-SNAPSHOT.jar
+```
+
+### 5. Uso de la aplicación
+Abrir en el navegador **http://localhost:8080**
+
+1.  **Ver catálogo:** la página principal (`/` o `/productos`) muestra los productos cargados desde la base de datos.
+2.  **Agregar al carrito:** clic en **"Agregar al Carrito"** en cualquier producto. Si el producto ya está en el carrito, se incrementa su cantidad.
+3.  **Ver el carrito:** botón **"Ver Carrito 🛒"**. Se muestra cada producto con precio, cantidad, subtotal y el total a pagar.
+4.  **Eliminar un producto:** botón **"Eliminar"** en la fila correspondiente del carrito.
+5.  **Procesar la compra:** botón **"Procesar Compra 💳"**. El carrito se vacía y se regresa al catálogo con el mensaje *"¡Compra realizada con éxito!"*.
+
+Cada navegador/sesión tiene su propio carrito (gracias a `@SessionScope`). Para probarlo, abrir la tienda en una ventana normal y en una ventana de incógnito.
+
+### 6. Rutas disponibles
+
+| Método | Ruta | Controlador | Descripción |
+| :--- | :--- | :--- | :--- |
+| GET | `/` o `/productos` | `ProductoController` | Catálogo de productos |
+| GET | `/carrito` | `CarritoController` | Ver el carrito de la sesión |
+| GET | `/carrito/agregar/{id}?cantidad=N` | `CarritoController` | Agrega el producto `{id}` (cantidad por defecto: 1) |
+| GET | `/carrito/eliminar/{id}` | `CarritoController` | Quita el producto `{id}` del carrito |
+| GET | `/carrito/comprar` | `CarritoController` | Simula la compra y vacía el carrito |
+| GET | `/h2-console` | (Spring Boot) | Consola web de la base de datos H2 |
+
+### 7. Consola de la base de datos H2
+Con la aplicación en ejecución, entrar a **http://localhost:8080/h2-console** y usar:
+
+*   **JDBC URL:** `jdbc:h2:mem:testdb`
+*   **User Name:** `sa`
+*   **Password:** *(vacío)*
+
+Allí se puede consultar la tabla con `SELECT * FROM PRODUCTO;`.
+
+> Si la consola responde 404, revisar que la línea `spring.h2.console.enabled=true` en `application.properties` no tenga espacios al final.
+
+> **Nota:** H2 es una base de datos **en memoria**: los datos se pierden al detener la aplicación y los 4 productos de prueba se vuelven a crear en cada arranque (`DataInitializer.java`). Para agregar o cambiar productos de prueba, editar ese archivo.
+
+### 8. Estructura del proyecto
+```
+src/main/java/com/tuuniversidad/ecommerce/
+├── EcommerceMvcApplication.java   # Punto de entrada (main)
+├── DataInitializer.java           # Carga productos de prueba al iniciar
+├── controller/                    # C: ProductoController, CarritoController
+├── model/                         # M: Producto (entidad JPA), Carrito, ItemCarrito
+├── repository/                    # M: ProductoRepository (Spring Data JPA)
+└── service/                       # M: ProductoService, CarritoService (@SessionScope)
+src/main/resources/
+├── application.properties         # Configuración (H2, JPA)
+└── templates/                     # V: vistas Thymeleaf
+    ├── productos/lista.html
+    └── carrito/detalle.html
+```
