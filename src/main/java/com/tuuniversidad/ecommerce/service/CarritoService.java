@@ -1,13 +1,14 @@
 package com.tuuniversidad.ecommerce.service;
 
-import com.tuuniversidad.ecommerce.model.Carrito;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.SessionScope;
 
+import com.tuuniversidad.ecommerce.model.Carrito;
+
 @Service
-@SessionScope // ¡Esta anotación es la clave de todo!
+@SessionScope // Mantiene el carrito vivo por usuario
 public class CarritoService {
-    
+
     private Carrito carrito = new Carrito();
 
     public Carrito getCarrito() {
@@ -17,4 +18,4 @@ public class CarritoService {
     public void vaciarCarrito() {
         this.carrito = new Carrito();
     }
-} 
+}
