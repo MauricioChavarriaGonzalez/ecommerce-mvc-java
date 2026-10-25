@@ -1,36 +1,206 @@
+
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Tienda en Línea - Productos</title>
-    <!-- Usamos Bootstrap para que se vea bonito sin escribir CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mi E-commerce | Productos</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background: #f5f7fb;
+            color: #1e293b;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .navbar {
+            background: white;
+            border: 1px solid #e8edf5;
+        }
+
+        .navbar-brand {
+            color: #1d4ed8;
+            font-weight: 800;
+        }
+
+        .page-title {
+            color: #172554;
+            font-weight: 800;
+        }
+
+        .product-card {
+            border: 1px solid #e8edf5;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(15, 23, 42, .09);
+        }
+
+        .product-card .card-body {
+            padding: 24px;
+        }
+
+        .product-name {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .product-description {
+            color: #64748b;
+            min-height: 48px;
+        }
+
+        .product-price {
+            color: #059669;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .btn-add {
+            background: #2563eb;
+            border: none;
+            border-radius: 10px;
+            padding: 11px;
+            font-weight: 600;
+        }
+
+        .btn-add:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-cart {
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .cart-count {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            min-width: 23px;
+            height: 23px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: .75rem;
+            margin-left: 5px;
+        }
+
+        .success-message {
+            border-radius: 12px;
+        }
+    </style>
 </head>
-<body class="container mt-5">
-    <nav class="navbar navbar-light bg-light mb-4 px-3 rounded shadow-sm">
-        <span class="navbar-brand mb-0 h1">Mi E-commerce MVC</span>
-        <a th:href="@{/carrito}" class="btn btn-primary">Ver Carrito 🛒</a>
+
+<body>
+<div class="container py-4">
+
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand px-3 py-3 rounded-4 shadow-sm mb-5">
+        <a class="navbar-brand text-decoration-none"
+           th:href="@{/productos}">
+            <i class="bi bi-shop me-2"></i>Mi E-commerce
+        </a>
+
+        <a th:href="@{/carrito}"
+           class="btn btn-primary btn-cart ms-auto">
+            <i class="bi bi-cart3 me-1"></i>
+            Ver carrito
+            <span class="cart-count"
+                  th:text="${cantidadCarrito != null ? cantidadCarrito : 0}">0</span>
+        </a>
     </nav>
 
-    <!-- Alerta que aparece cuando terminas una compra -->
-    <div class="alert alert-success" th:if="${param.compraExitosa}">
-        ¡Compra realizada con éxito!
+    <!-- Mensaje después de agregar -->
+    <div class="alert alert-success alert-dismissible fade show success-message"
+         th:if="${param.agregado}" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        Producto agregado al carrito correctamente.
+        <button type="button" class="btn-close"
+                data-bs-dismiss="alert" aria-label="Cerrar"></button>
     </div>
 
-    <h2>Catálogo de Productos</h2>
-    <div class="row">
-        <!-- Thymeleaf recorre la lista de productos que le enviamos desde Java -->
-        <div class="col-md-4 mb-4" th:each="producto : ${productos}">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${producto.nombre}">Nombre Producto</h5>
-                    <p class="card-text text-muted" th:text="${producto.descripcion}">Descripción</p>
-                    <p class="card-text fw-bold text-success" th:text="'$' + ${producto.precio}">Precio</p>
-                    <!-- El enlace pasa el ID del producto a nuestro CarritoController -->
-                    <a th:href="@{/carrito/agregar/{id}(id=${producto.id})}" class="btn btn-success w-100">Agregar al Carrito</a>
+    <!-- Mensaje de compra realizada -->
+    <div class="alert alert-success alert-dismissible fade show success-message"
+         th:if="${param.compraExitosa}" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        ¡Compra realizada con éxito!
+        <button type="button" class="btn-close"
+                data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+
+    <!-- Encabezado -->
+    <div class="mb-4">
+        <h1 class="page-title h2">Catálogo de productos</h1>
+        <p class="text-secondary">
+            Explora nuestros productos y agrega tus favoritos al carrito.
+        </p>
+    </div>
+
+    <!-- Productos -->
+    <div class="row g-4">
+
+        <div class="col-sm-6 col-lg-4"
+             th:each="producto : ${productos}">
+
+            <div class="card product-card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+
+                    <h5 class="product-name"
+                        th:text="${producto.nombre}">
+                        Nombre del producto
+                    </h5>
+
+                    <p class="product-description"
+                       th:text="${producto.descripcion}">
+                        Descripción del producto
+                    </p>
+
+                    <p class="product-price mb-3"
+                       th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 2)}">
+                        $0.00
+                    </p>
+
+                    <!-- Agregar sin abandonar el catálogo -->
+                    <form th:action="@{/carrito/agregar/{id}(id=${producto.id})}"
+                          method="post" class="mt-auto">
+
+                        <button type="submit"
+                                class="btn btn-primary btn-add w-100">
+                            <i class="bi bi-cart-plus me-2"></i>
+                            Agregar al carrito
+                        </button>
+                    </form>
+
                 </div>
             </div>
+
         </div>
+
     </div>
+
+    <!-- Catálogo vacío -->
+    <div class="text-center py-5"
+         th:if="${#lists.isEmpty(productos)}">
+
+        <i class="bi bi-box-seam display-3 text-secondary"></i>
+        <h4 class="mt-3">No hay productos disponibles</h4>
+        <p class="text-secondary">
+            Vuelve más tarde para consultar nuestro catálogo.
+        </p>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>
